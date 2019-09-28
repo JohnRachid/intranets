@@ -209,7 +209,7 @@ public class WebSearch
 					while (!token.equalsIgnoreCase("</A>"));
 
 					if (DEBUGGING) System.out.println("   with hypertext: " + hypertext);
-					if(searchStrategy.equals("BREADTH")){
+					if(searchStrategy.equalsIgnoreCase("breadth")){
 
 //						System.out.println("hypertext = " + hypertext);
 						//create and add new node to open
@@ -222,7 +222,7 @@ public class WebSearch
 
 
                     }
-					else if(searchStrategy.equals("depth")){
+					else if(searchStrategy.equalsIgnoreCase("depth")){
 
 						SearchNode node = new SearchNode(hyperlink);
 
