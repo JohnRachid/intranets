@@ -29,14 +29,18 @@ public class WebSearch
 {
 	static LinkedList<SearchNode> OPEN; // Feel free to choose your own data structures for searching,
 	static HashSet<String> CLOSED;      // and be sure to read documentation about them.
+    static LinkedList<SearchNode> fifo = new LinkedList<SearchNode>();
 
-	static final boolean DEBUGGING = false; // When set, report what's happening.
+
+    static final boolean DEBUGGING = true; // When set, report what's happening.
 	// WARNING: lots of info is printed.
 
 	static int beamWidth = 2; // If searchStrategy = "beam",
 	// limit the size of OPEN to this value.
 	// The setSize() method in the Vector
 	// class can be used to accomplish this.
+
+    static int nodesExpanded = 0; // If searchStrategy = "beam",
 
 	static final String START_NODE     = "page1.html";
 
@@ -95,6 +99,10 @@ public class WebSearch
 
 			if (isaGoalNode(contents))
 			{
+                System.out.println(nodesVisited);
+//                fifo.clear();
+//                OPEN.clear();
+
 				// Report the solution path found
 				// (You might also wish to write a method that
 				// counts the solution-path's length, and then print that
@@ -124,7 +132,7 @@ public class WebSearch
 	// created (in order to later extract solution paths).
 	static void addNewChildrenToOPEN(SearchNode parent, String contents, String searchStrategy)
 	{
-		// StringTokenizer's are a nice class built into Java.
+        // StringTokenizer's are a nice class built into Java.
 		// Be sure to read about them in some Java documentation.
 		// They are useful when one wants to break up a string into words (tokens).
 		StringTokenizer st = new StringTokenizer(contents);
@@ -202,7 +210,25 @@ public class WebSearch
 					while (!token.equalsIgnoreCase("</A>"));
 
 					if (DEBUGGING) System.out.println("   with hypertext: " + hypertext);
+					if(searchStrategy.equals("BREADTH")){
 
+//						System.out.println("hypertext = " + hypertext);
+						//create and add new node to open
+						SearchNode node = new SearchNode(hyperlink);
+						OPEN.add(node); //this gives correct nodes visited
+                        nodesExpanded++;
+                        System.out.println("nodes Expanded = " + nodesExpanded);
+//                        if(!CLOSED.contains(node.getNodeName())){
+//                            fifo.add(node);
+//                            System.out.println("linked list = " + fifo.toString());
+////                        if(OPEN.size() == 0){
+////                            SearchNode child = (fifo.removeFirst());
+////                            System.out.println("VISITING CHILD");
+////                            OPEN.add(child);
+////                        }
+//                        }
+
+                    }
 					//////////////////////////////////////////////////////////////////////
 					// At this point, you have a new child (hyperlink) and you have to
 					// insert it into OPEN according to the search strategy being used.
@@ -229,6 +255,17 @@ public class WebSearch
 				}
 			}
 		}
+        if(searchStrategy.equals("BREADTH")){
+
+//           if(fifo.size() > 0){
+//                SearchNode node = (fifo.removeFirst());
+//                OPEN.add(node);
+//                addNewChildrenToOPEN(node,contents,"BREADTH");
+//                System.out.println(contents);
+//               System.out.println("CLOSED = " + CLOSED.toString());
+//            }
+
+        }
 	}
 
 	// A GOAL is a page that contains the goalPattern set above.
@@ -283,16 +320,26 @@ public class WebSearch
 class SearchNode
 {
 	final String nodeName;
+	private String path;
+	private SearchNode parent;
+	private SearchNode
+
 	public SearchNode(String name) {
 		nodeName = name;
+//		path = "";
 	}
-
+//    public void setPath(String pathName){
+//	    path = pathName;
+//    }
 	public void reportSolutionPath() {
+
 	}
 
 	public String getNodeName() {
 		return nodeName;
 	}
+
+
 
 
 }
