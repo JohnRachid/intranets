@@ -100,8 +100,7 @@ public class WebSearch
 			if (isaGoalNode(contents))
 			{
                 System.out.println(nodesVisited);
-//                fifo.clear();
-//                OPEN.clear();
+
 
 				// Report the solution path found
 				// (You might also wish to write a method that
@@ -215,20 +214,25 @@ public class WebSearch
 //						System.out.println("hypertext = " + hypertext);
 						//create and add new node to open
 						SearchNode node = new SearchNode(hyperlink);
+
+						node.generatePath(parent);
+						System.out.println(node.getNodePath());
+
 						OPEN.add(node); //this gives correct nodes visited
-                        nodesExpanded++;
-                        System.out.println("nodes Expanded = " + nodesExpanded);
-//                        if(!CLOSED.contains(node.getNodeName())){
-//                            fifo.add(node);
-//                            System.out.println("linked list = " + fifo.toString());
-////                        if(OPEN.size() == 0){
-////                            SearchNode child = (fifo.removeFirst());
-////                            System.out.println("VISITING CHILD");
-////                            OPEN.add(child);
-////                        }
-//                        }
+
 
                     }
+					else if(searchStrategy.equals("depth")){
+
+						SearchNode node = new SearchNode(hyperlink);
+
+						node.generatePath(parent);
+						System.out.println(node.getNodePath());
+
+						OPEN.addFirst(node); //this gives correct nodes visited
+
+
+					}
 					//////////////////////////////////////////////////////////////////////
 					// At this point, you have a new child (hyperlink) and you have to
 					// insert it into OPEN according to the search strategy being used.
@@ -255,17 +259,6 @@ public class WebSearch
 				}
 			}
 		}
-        if(searchStrategy.equals("BREADTH")){
-
-//           if(fifo.size() > 0){
-//                SearchNode node = (fifo.removeFirst());
-//                OPEN.add(node);
-//                addNewChildrenToOPEN(node,contents,"BREADTH");
-//                System.out.println(contents);
-//               System.out.println("CLOSED = " + CLOSED.toString());
-//            }
-
-        }
 	}
 
 	// A GOAL is a page that contains the goalPattern set above.
@@ -320,19 +313,35 @@ public class WebSearch
 class SearchNode
 {
 	final String nodeName;
-	private String path;
-	private SearchNode parent;
-	private SearchNode
+	private String path; //path = start node plus parent path + name
+	private int pathLength;
+
 
 	public SearchNode(String name) {
 		nodeName = name;
-//		path = "";
+		path = "";
 	}
-//    public void setPath(String pathName){
-//	    path = pathName;
-//    }
-	public void reportSolutionPath() {
+	public void addToPath(String newLink) {
+		path = path+ "->" +newLink;
+	}
 
+	public void generatePath(SearchNode parent) {
+		if(parent.getNodePath().isEmpty()){
+			path = "page1.html->" + nodeName;
+			pathLength=1;
+		}else{
+			path =  parent.getNodePath() + "->" + nodeName;
+			pathLength = parent.pathLength + 1;
+		}
+	}
+
+	public String getNodePath(){
+
+		return path;
+	}
+	public void reportSolutionPath() {
+		System.out.println("SOLUTION = " + path);
+		System.out.println("path length = " + pathLength);
 	}
 
 	public String getNodeName() {
