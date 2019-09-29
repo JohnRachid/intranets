@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
+import java.util.Collections;
 
 
 // You should call this code as follows:
@@ -40,7 +41,6 @@ public class WebSearch
 	// The setSize() method in the Vector
 	// class can be used to accomplish this.
 
-    static int nodesExpanded = 0; // If searchStrategy = "beam",
 
 	static final String START_NODE     = "page1.html";
 
@@ -211,15 +211,12 @@ public class WebSearch
 					if (DEBUGGING) System.out.println("   with hypertext: " + hypertext);
 					if(searchStrategy.equalsIgnoreCase("breadth")){
 
-//						System.out.println("hypertext = " + hypertext);
-						//create and add new node to open
 						SearchNode node = new SearchNode(hyperlink);
 
 						node.generatePath(parent);
-						System.out.println(node.getNodePath());
+//						System.out.println(node.getNodePath());
 
 						OPEN.add(node); //this gives correct nodes visited
-
 
                     }
 					else if(searchStrategy.equalsIgnoreCase("depth")){
@@ -227,11 +224,27 @@ public class WebSearch
 						SearchNode node = new SearchNode(hyperlink);
 
 						node.generatePath(parent);
-						System.out.println(node.getNodePath());
+//						System.out.println(node.getNodePath());
 
 						OPEN.addFirst(node); //this gives correct nodes visited
 
+					}
+					else if(searchStrategy.equalsIgnoreCase("best")){
+						SearchNode node = new SearchNode(hyperlink);
+						int bonus = 0;
 
+						node.generatePath(parent);
+
+						bonus = count(hypertext,"QUERY");
+
+						node.sethScore(bonus*5 + hypertext.length());
+
+//						node.sethScore(GOAL_PATTERN.compareTo(hypertext));
+
+						OPEN.add(node);
+						System.out.println("node score = " + node.gethScore());
+						Collections.sort(OPEN);
+						System.out.println("hyperlink = "+ hyperlink);
 					}
 					//////////////////////////////////////////////////////////////////////
 					// At this point, you have a new child (hyperlink) and you have to
@@ -259,6 +272,10 @@ public class WebSearch
 				}
 			}
 		}
+	}
+
+	public static int count(String str, String target) {
+		return (str.length() - str.replace(target, "").length()) / target.length();
 	}
 
 	// A GOAL is a page that contains the goalPattern set above.
@@ -310,20 +327,48 @@ public class WebSearch
 // the name of the file (eg, "page7.html") associated with this node, and
 // a (void) method called reportSolutionPath() that prints the path
 // from the start node to the current node represented by the SearchNode instance.
-class SearchNode
+class SearchNode implements Comparable<SearchNode>
 {
 	final String nodeName;
 	private String path; //path = start node plus parent path + name
 	private int pathLength;
+	private int hScore;
 
 
 	public SearchNode(String name) {
 		nodeName = name;
+		hScore = 0;
 		path = "";
 	}
-	public void addToPath(String newLink) {
-		path = path+ "->" +newLink;
+
+	public void sethScore(int score){
+		hScore = score;
 	}
+
+	public int gethScore(){
+		return hScore;
+	}
+
+//	public void setScore(int score){
+//		hScore = score;
+//	}
+
+	public void best(String hypertext, String contents){
+
+	}
+
+	@Override
+	public int compareTo(SearchNode node) {
+		int comparedLength = node.hScore;
+		if (this.hScore > comparedLength) {
+			return 1;
+		} else if (this.hScore == comparedLength) {
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
 
 	public void generatePath(SearchNode parent) {
 		if(parent.getNodePath().isEmpty()){
