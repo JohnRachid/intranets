@@ -36,7 +36,7 @@ public class WebSearch
     static final boolean DEBUGGING = true; // When set, report what's happening.
 	// WARNING: lots of info is printed.
 
-	static int beamWidth = 2; // If searchStrategy = "beam",
+	static int beamWidth = 20; // If searchStrategy = "beam",
 	// limit the size of OPEN to this value.
 	// The setSize() method in the Vector
 	// class can be used to accomplish this.
@@ -237,14 +237,37 @@ public class WebSearch
 
 						bonus = count(hypertext,"QUERY");
 
-						node.sethScore(bonus*5 + hypertext.length());
-
-//						node.sethScore(GOAL_PATTERN.compareTo(hypertext));
-
+						node.sethScore(bonus*10 + hypertext.length());
+						OPEN.clear();
 						OPEN.add(node);
-						System.out.println("node score = " + node.gethScore());
-						Collections.sort(OPEN);
-						System.out.println("hyperlink = "+ hyperlink);
+						Collections.sort(OPEN); //not sorting correctly since it goes to 18 first
+//						for(SearchNode tempnode: OPEN){
+//							System.out.print(tempnode.getNodeName() + " ");
+//							System.out.print(tempnode.gethScore()+ " ");
+//						}
+//						System.out.println(node.getNodeName());
+//						System.out.println(node.gethScore());
+
+
+//						System.out.println("hyperlink = "+ hyperlink);
+					}
+					else if(searchStrategy.equalsIgnoreCase("beam")){
+						SearchNode node = new SearchNode(hyperlink);
+						int bonus = 0;
+
+						node.generatePath(parent);
+
+						bonus = count(hypertext,"QUERY");
+
+						node.sethScore(bonus*10 + hypertext.length());
+						OPEN.clear();
+						OPEN.add(node);
+						
+						Collections.sort(OPEN); //not sorting correctly since it goes to 18 first
+						if(OPEN.size() > beamWidth){
+							OPEN.removeLast();
+							System.out.println(OPEN.size());
+						}
 					}
 					//////////////////////////////////////////////////////////////////////
 					// At this point, you have a new child (hyperlink) and you have to
@@ -349,9 +372,6 @@ class SearchNode implements Comparable<SearchNode>
 		return hScore;
 	}
 
-//	public void setScore(int score){
-//		hScore = score;
-//	}
 
 	public void best(String hypertext, String contents){
 
@@ -361,11 +381,11 @@ class SearchNode implements Comparable<SearchNode>
 	public int compareTo(SearchNode node) {
 		int comparedLength = node.hScore;
 		if (this.hScore > comparedLength) {
-			return 1;
+			return -1;
 		} else if (this.hScore == comparedLength) {
 			return 0;
 		} else {
-			return -1;
+			return 1;
 		}
 	}
 
