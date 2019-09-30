@@ -238,7 +238,7 @@ public class WebSearch
 						bonus = count(hypertext,"QUERY");
 
 						node.sethScore(bonus*10 + hypertext.length());
-						OPEN.clear();
+//						OPEN.clear();
 						OPEN.add(node);
 						Collections.sort(OPEN); //not sorting correctly since it goes to 18 first
 //						for(SearchNode tempnode: OPEN){
@@ -260,13 +260,14 @@ public class WebSearch
 						bonus = count(hypertext,"QUERY");
 
 						node.sethScore(bonus*10 + hypertext.length());
-						OPEN.clear();
+
 						OPEN.add(node);
-						
+
 						Collections.sort(OPEN); //not sorting correctly since it goes to 18 first
 						if(OPEN.size() > beamWidth){
 							OPEN.removeLast();
-							System.out.println(OPEN.size());
+							System.out.println("size = " + OPEN.size());
+
 						}
 					}
 					//////////////////////////////////////////////////////////////////////
