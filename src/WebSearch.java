@@ -2,10 +2,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.server.ExportException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.util.Collections;
+import org.jsoup.nodes.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 
 // You should call this code as follows:
@@ -33,7 +38,7 @@ public class WebSearch
     static LinkedList<SearchNode> fifo = new LinkedList<SearchNode>();
 
 
-    static final boolean DEBUGGING = true; // When set, report what's happening.
+    static final boolean DEBUGGING = false; // When set, report what's happening.
 	// WARNING: lots of info is printed.
 
 	static int beamWidth = 20; // If searchStrategy = "beam",
@@ -43,6 +48,8 @@ public class WebSearch
 
 
 	static final String START_NODE     = "page1.html";
+
+	static String START_NODE_WEB = "";
 
 	// A web page is a goal node if it includes 
 	// the following string.
@@ -63,13 +70,27 @@ public class WebSearch
 					searchStrategyName.equalsIgnoreCase("depth")   ||
 					searchStrategyName.equalsIgnoreCase("best")    ||
 					searchStrategyName.equalsIgnoreCase("beam"))
+
 			{
 				performSearch(START_NODE, directoryName, searchStrategyName);
+			}
+			else if(searchStrategyName.equalsIgnoreCase("web")){
+				try {
+					Document doc = Jsoup.connect("https://en.wikipedia.org/wiki/Computer").get();
+					System.out.println(doc.title());
+					Elements newsHeadlines = doc.select("#mp-itn b a");
+					System.out.println(doc.location());
+					START_NODE_WEB = doc.location();
+					performWebSearch(START_NODE_WEB, searchStrategyName);
+				}catch(Exception e){
+
+				}
+
 			}
 			else
 			{
 				System.out.println("The valid search strategies are:");
-				System.out.println("  BREADTH DEPTH BEST BEAM");
+				System.out.println("  BREADTH DEPTH BEST BEAM WEB");
 			}
 		}
 
@@ -125,6 +146,52 @@ public class WebSearch
 				", using: " + searchStrategy + " search.");
 	}
 
+	static void performWebSearch(String startNode, String searchStrategy)
+	{
+		int nodesVisited = 0;
+
+		OPEN   = new LinkedList<SearchNode>();
+		CLOSED = new HashSet<String>();
+
+		OPEN.add(new SearchNode(startNode));
+
+		while (!OPEN.isEmpty())
+		{
+			SearchNode currentNode = pop(OPEN);
+			String currentURL = currentNode.getNodeName();
+			System.out.println("AAAAAAA");
+
+
+			nodesVisited++;
+
+			// Go and fetch the contents of this file.
+			String contents = fetchContents(startNode);
+
+
+
+			if (isaWebGoalNode(contents))
+			{
+				System.out.println(nodesVisited);
+
+				currentNode.reportSolutionPath();
+				break;
+			}
+
+			// Remember this node was visited.
+			CLOSED.add(currentURL);
+
+			addNewChildrenToOPEN(currentNode, contents, "breadth");
+
+			// Provide a status report.
+			if (DEBUGGING) System.out.println("Nodes visited = " + nodesVisited
+					+ " |OPEN| = " + OPEN.size());
+		}
+
+//		System.out.println(" Visited " + nodesVisited + " nodes, starting @" +
+//				" " + directoryName + File.separator + startNode +
+//				", using: " + searchStrategy + " search.");
+	}
+
 	// This method reads the page's contents and
 	// collects the 'children' nodes (ie, the hyperlinks on this page).
 	// The parent node is also passed in so that 'backpointers' can be
@@ -135,7 +202,11 @@ public class WebSearch
 		// Be sure to read about them in some Java documentation.
 		// They are useful when one wants to break up a string into words (tokens).
 		StringTokenizer st = new StringTokenizer(contents);
-
+		if(searchStrategy.equalsIgnoreCase("breadth")){
+			st = new StringTokenizer(contents, "<a");
+		}
+//		System.out.println("contents = " + contents);
+//		System.out.println("tokens = " + st.countTokens());
 		while (st.hasMoreTokens())
 		{
 			String token = st.nextToken();
@@ -214,7 +285,7 @@ public class WebSearch
 						SearchNode node = new SearchNode(hyperlink);
 
 						node.generatePath(parent);
-//						System.out.println(node.getNodePath());
+						System.out.println("AAAAAAA");
 
 						OPEN.add(node); //this gives correct nodes visited
 
@@ -295,17 +366,38 @@ public class WebSearch
 					// methods in the Vector class.
 				}
 			}
+
 		}
 	}
 
 	public static int count(String str, String target) {
 		return (str.length() - str.replace(target, "").length()) / target.length();
 	}
+	public static String fetchContents(String startNode) {
+		try {
+			Document doc = Jsoup.connect(startNode).get();
+			Elements link = doc.select("a");
+
+//			String links = link.attr("href");
+//			links = links.replace("a", "FISH");
+			System.out.println(link.toString());
+			return link.toString();
+		}catch(Exception e){
+
+		}
+
+		return null;
+	}
 
 	// A GOAL is a page that contains the goalPattern set above.
 	static boolean isaGoalNode(String contents)
 	{
 		return (contents != null && contents.indexOf(GOAL_PATTERN) >= 0);
+	}
+
+	static boolean isaWebGoalNode(String contents)
+	{
+		return (contents != null && contents.indexOf("Deep Learning - Wikipedia") >= 0);
 	}
 
 	// Is this hyperlink already in the OPEN list?
@@ -374,9 +466,7 @@ class SearchNode implements Comparable<SearchNode>
 	}
 
 
-	public void best(String hypertext, String contents){
 
-	}
 
 	@Override
 	public int compareTo(SearchNode node) {
