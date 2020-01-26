@@ -7,3 +7,5 @@ The jar can be found at: https://jsoup.org/download
 
 In order to run the file enter the following prompts:  java WebSearch directoryName searchStrategyName
 the 5 different searches are as follows: breadth depth best beam web
+
+The online search is not completed
